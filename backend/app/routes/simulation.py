@@ -3,6 +3,11 @@ from pydantic import BaseModel, Field
 from app.components.solar import calculate_solar_power
 from app.components.transmission import calculate_transmission
 from app.components.rectenna import calculate_rectenna
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -18,17 +23,23 @@ class SimulationRequest(BaseModel):
 @router.post("/simulate")
 async def simulate(req: SimulationRequest):
     try:
+        logger.info(f"Simulation request received: {req.model_dump_json()}")
+
         # Convert API natural units to strict SI
         freq_hz = req.frequency_ghz * 1e9
         dist_m = req.distance_km * 1000.0
+        logger.info(f"SI units: freq_hz={freq_hz}, dist_m={dist_m}")
 
         # Run Solar Model
+        logger.info("Running solar model...")
         solar_result = calculate_solar_power(
             area_m2=req.area_m2, 
             efficiency=req.solar_efficiency
         )
+        logger.info(f"Solar model result: {solar_result}")
 
         # Run Transmission Model
+        logger.info("Running transmission model...")
         trans_result = calculate_transmission(
             tx_power_w=solar_result["power_watts"],
             distance_m=dist_m,
@@ -36,12 +47,15 @@ async def simulate(req: SimulationRequest):
             tx_diameter_m=req.tx_diameter_m,
             rx_diameter_m=req.rx_diameter_m
         )
+        logger.info(f"Transmission model result: {trans_result}")
 
         # Run Rectenna Model
+        logger.info("Running rectenna model...")
         rect_result = calculate_rectenna(
             received_power_w=trans_result["rx_power_w"],
             efficiency=req.rectenna_efficiency
         )
+        logger.info(f"Rectenna model result: {rect_result}")
         
         # Build strict response structure
         return {
@@ -70,6 +84,8 @@ async def simulate(req: SimulationRequest):
             ]
         }
     except AssertionError as e:
+        logger.error(f"AssertionError in simulation: {e}", exc_info=True)
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
+        logger.error(f"Unhandled exception in simulation: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Simulation error: {str(e)}")
