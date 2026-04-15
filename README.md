@@ -1,7 +1,7 @@
 # ⚡ HELIOS-LINK v3.0
 **Physics-Based Space-Based Solar Power (SBSP) Engineering Simulation Platform**
 
-![Helios-Link Banner](public/sun.jpg) *(Illustration)*
+<!-- ![Helios-Link Banner](public/sun.jpg) *(Illustration)* -->
 
 **HELIOS-LINK** has evolved from purely visual cinematic renders into a rigorous, physics-driven **aerospace engineering simulation engine**. It allows systems engineers to evaluate Space-Based Solar Power transmission using strict constraints defined by real-world geometry, aperture efficiencies, and solar constants—all visualized inside an immersive 3D holographic Mission Control environment.
 
